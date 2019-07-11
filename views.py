@@ -55,32 +55,7 @@ def get_and_write_next_rows(ckan,resource_id,start_line=0):
         yield list_of_rows_to_write
         num += 1
 
-def get_and_write_next_rows_old(ckan,resource_id,query,field,search_term,writer,chunk_size,offset=0,written=0):
-    if query is None:
-        r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, filters={field: search_term})
-    else:
-        query += " LIMIT {} OFFSET {}".format(chunk_size,offset)
-        r = ckan.action.datastore_search_sql(sql=query)
-    data = r['records']
-    schema = eliminate_field(r['fields'],'_full_text')
-    # Exclude _full_text from the schema.
-
-    ordered_fields = [f['id'] for f in schema]
-
-    if written == 0:
-        writer.writerow(ordered_fields)
-
-    for row in data:
-        writer.writerow([row[f] for f in ordered_fields])
-
-    if 'total' in r:
-        total = r['total']
-    else:
-        total = total_rows(ckan,query)
-
-    return written+len(data), total
-
-#############3333
+#############
 def get_headers():
     return ['field1', 'field2', 'field3']
 
@@ -102,16 +77,24 @@ def iter_items(items, pseudo_buffer):
     yield pseudo_buffer.write(','.join(get_headers()) + '\n')
 
     for item in items:
-        print(get_data(item))
         yield writer.writerow(get_data(item))
 
-#def get_response(queryset):
 def get_response(request, resource_id):
+    # NOTE: No Content-Length header!
+    # Python documentation: "StreamingHttpResponse should only be used in
+    # situations where it is absolutely required that the whole content
+    # isn't iterated before transferring the data to the client. Because
+    # the content can’t be accessed, many middlewares can't function
+    # normally. For example the ETag and Content-Length headers can't
+    # be generated for streaming responses."
+
     response = StreamingHttpResponse(
             streaming_content=(iter_items([{'field1': 'Cookie Monster', 'field2': 'blue', 'field3': 'Me love cookies!'},
                 {'field1': "Bert", 'field2': 'yellow', 'field3': 'Ernie! Where is my oatmeal?!!'}], Echo())),
         content_type='text/csv',
     )
+    # streaming_content: An iterator of strings representing the content.
+
     response['Content-Disposition'] = 'attachment;filename=items.csv'
     return response
 
