@@ -23,18 +23,17 @@ class Echo(object):
 
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
     offset = start_line
-    chunk_size = 5000
+    chunk_size = 20000 # Maybe consider changing chunk_size dynamically based on current system resources.
     records_format = 'objects' if file_format == 'json' else file_format
     r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
-    schema = eliminate_field(r['fields'],'_full_text')
-    # Exclude _full_text from the schema.
+    schema = eliminate_field(r['fields'],'_full_text') # Exclude _full_text from the schema.
     ordered_fields = [f['id'] for f in schema]
     #writer = csv.DictWriter(pseudo_buffer, fieldnames=ordered_fields)
     yield pseudo_buffer.write(','.join(ordered_fields) + '\n')
     while True:
         if offset != 0:
             r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
-        data = r['records'] # For records_format = 'csv', this is lines of CSV, which can be written directly.
+        data = r['records'] # For records_format == 'csv', this is lines of CSV, which can be written directly.
         # When the end of the dataset has been reached, using the
         # "break" command is one way to halt further iteration.
         if len(data) == 0:
