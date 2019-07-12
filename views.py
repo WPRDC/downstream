@@ -21,6 +21,12 @@ class Echo(object):
     def write(self, value):
         return value
 
+def generate_header(ordered_fields, file_format):
+    if file_format == 'csv':
+        return ','.join(ordered_fields) + '\n'
+    if file_format == 'tsv':
+        return '\t'.join(ordered_fields) + '\n'
+
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
     offset = start_line
     chunk_size = 20000 # Maybe consider changing chunk_size dynamically based on current system resources.
@@ -29,7 +35,7 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
     schema = eliminate_field(r['fields'],'_full_text') # Exclude _full_text from the schema.
     ordered_fields = [f['id'] for f in schema]
     #writer = csv.DictWriter(pseudo_buffer, fieldnames=ordered_fields)
-    yield pseudo_buffer.write(','.join(ordered_fields) + '\n')
+    yield pseudo_buffer.write(generate_header(ordered_fields, file_format))
     while True:
         if offset != 0:
             r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
@@ -47,7 +53,7 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
         yield pseudo_buffer.write(to_write)
         offset += chunk_size
 
-def stream_response(request, resource_id):
+def stream_response(request, resource_id, file_format='csv'):
     # NOTE: No Content-Length header!
     # Python documentation: "StreamingHttpResponse should only be used in
     # situations where it is absolutely required that the whole content
@@ -56,11 +62,12 @@ def stream_response(request, resource_id):
     # normally. For example the ETag and Content-Length headers can't
     # be generated for streaming responses."
 
-    file_format = 'csv'
+    if file_format in ['csv', 'tsv']:
+        content_type = 'text/{}'/format(file_format)
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
     response = StreamingHttpResponse(
             streaming_content=(get_and_write_next_rows(Echo(), ckan, resource_id, 0, file_format)),
-        content_type='text/csv',
+        content_type=content_type,
     )
     # streaming_content: An iterator of strings representing the content.
 
