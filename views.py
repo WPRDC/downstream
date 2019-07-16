@@ -34,7 +34,6 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
     r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
     schema = eliminate_field(r['fields'],'_full_text') # Exclude _full_text from the schema.
     ordered_fields = [f['id'] for f in schema]
-    #writer = csv.DictWriter(pseudo_buffer, fieldnames=ordered_fields)
     yield pseudo_buffer.write(generate_header(ordered_fields, file_format))
     while True:
         if offset != 0:
@@ -46,10 +45,6 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
             break
 
         to_write = data
-        #to_write = []
-        #for row in data:
-        #    to_write.append([row[f] for f in ordered_fields])
-        #yield writer.writerows(to_write)
         yield pseudo_buffer.write(to_write)
         offset += chunk_size
         time.sleep(0.3)
