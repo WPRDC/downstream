@@ -60,7 +60,7 @@ def stream_response(request, resource_id, file_format='csv'):
 
     file_format = file_format.lower()
     if file_format in ['csv', 'tsv']:
-        content_type = 'text/{}'/format(file_format)
+        content_type = 'text/{}'.format(file_format)
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
     response = StreamingHttpResponse(
             streaming_content=(get_and_write_next_rows(Echo(), ckan, resource_id, 0, file_format)),
