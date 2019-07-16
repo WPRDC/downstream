@@ -68,5 +68,5 @@ def stream_response(request, resource_id, file_format='csv'):
     )
     # streaming_content: An iterator of strings representing the content.
 
-    response['Content-Disposition'] = 'attachment;filename=items.csv'
+    response['Content-Disposition'] = 'attachment;filename={}.{}'.format(resource_id, file_format)
     return response
