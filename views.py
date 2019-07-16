@@ -58,6 +58,7 @@ def stream_response(request, resource_id, file_format='csv'):
     # normally. For example the ETag and Content-Length headers can't
     # be generated for streaming responses."
 
+    file_format = file_format.lower()
     if file_format in ['csv', 'tsv']:
         content_type = 'text/{}'/format(file_format)
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
