@@ -1,4 +1,4 @@
-import requests, csv, ckanapi
+import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse
 
 DEFAULT_SITE = "https://data.wprdc.org"
@@ -29,7 +29,7 @@ def generate_header(ordered_fields, file_format):
 
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
     offset = start_line
-    chunk_size = 20000 # Maybe consider changing chunk_size dynamically based on current system resources.
+    chunk_size = 200000 # Maybe consider changing chunk_size dynamically based on current system resources.
     records_format = 'objects' if file_format == 'json' else file_format
     r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
     schema = eliminate_field(r['fields'],'_full_text') # Exclude _full_text from the schema.
@@ -52,6 +52,7 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
         #yield writer.writerows(to_write)
         yield pseudo_buffer.write(to_write)
         offset += chunk_size
+        time.sleep(0.3)
 
 def stream_response(request, resource_id, file_format='csv'):
     # NOTE: No Content-Length header!
