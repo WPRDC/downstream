@@ -1,6 +1,8 @@
 import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse
 
+from .ckan_util import get_resource_parameter
+
 DEFAULT_SITE = "https://data.wprdc.org"
 
 def eliminate_field(schema,field_to_omit):
