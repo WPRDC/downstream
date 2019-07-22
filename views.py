@@ -1,7 +1,7 @@
 import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse
 
-from .ckan_util import get_resource_parameter
+from .ckan_util import get_resource_parameter, total_rows
 
 DEFAULT_SITE = "https://data.wprdc.org"
 
@@ -11,12 +11,6 @@ def eliminate_field(schema,field_to_omit):
         if s['id'] != field_to_omit:
             new_schema.append(s)
     return new_schema
-
-def total_rows(ckan,query):
-    row_counting_query = 'SELECT COUNT(*) FROM ({}) subresult'.format(query)
-    r = ckan.action.datastore_search_sql(sql=row_counting_query)
-    count = int(r['records'][0]['count'])
-    return count
 
 # StreamingHttpResponse requires a File-like class that has a 'write' method
 class Echo(object):

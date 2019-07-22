@@ -42,3 +42,9 @@ def get_resource_parameter(site,resource_id,parameter=None,API_key=None):
         return metadata
     else:
         return metadata[parameter]
+
+def total_rows(ckan,query):
+    row_counting_query = 'SELECT COUNT(*) FROM ({}) subresult'.format(query)
+    r = ckan.action.datastore_search_sql(sql=row_counting_query)
+    count = int(r['records'][0]['count'])
+    return count
