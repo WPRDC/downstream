@@ -43,6 +43,13 @@ def get_resource_parameter(site,resource_id,parameter=None,API_key=None):
     else:
         return metadata[parameter]
 
+def get_package_title(site,resource_id,API_key=None):
+    package_id = get_resource_parameter(site, resource_id, 'package_id', API_key)
+    return get_package_parameter(site, package_id, 'title', API_key)
+
+def get_resource_name(site,resource_id,API_key=None):
+    return get_resource_parameter(site,resource_id,'name',API_key)
+
 def get_number_of_rows(ckan, resource_id):
     """Returns the number of rows in a datastore. Note that even when there is a limit
     placed on the number of results a CKAN API call can return, this function will
