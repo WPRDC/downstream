@@ -43,8 +43,9 @@ def get_resource_parameter(site,resource_id,parameter=None,API_key=None):
     else:
         return metadata[parameter]
 
-def total_rows(ckan,query):
-    row_counting_query = 'SELECT COUNT(*) FROM ({}) subresult'.format(query)
-    r = ckan.action.datastore_search_sql(sql=row_counting_query)
-    count = int(r['records'][0]['count'])
-    return count
+def get_number_of_rows(ckan, resource_id):
+    """Returns the number of rows in a datastore. Note that even when there is a limit
+    placed on the number of results a CKAN API call can return, this function will
+    still give the true number of rows."""
+    results_dict = ckan.action.datastore_info(id = resource_id)
+    return results_dict['meta']['count']

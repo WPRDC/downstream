@@ -2,7 +2,7 @@ import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse
 from django.shortcuts import redirect
 
-from .ckan_util import get_resource_parameter, total_rows
+from .ckan_util import get_resource_parameter, get_number_of_rows
 
 DEFAULT_SITE = "https://data.wprdc.org"
 
