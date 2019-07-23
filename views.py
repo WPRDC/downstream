@@ -59,10 +59,10 @@ def stream_response(request, resource_id, file_format='csv'):
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
     resource_format = get_resource_parameter(DEFAULT_SITE, resource_id, parameter='format', API_key=None).lower()
     n = len(file_format)
-    if resource_format == file_format and resource['url'][-n:] == file_format:
-        # If the source file is already in file_format, just serve the file directly.
+    if resource_format == file_format:
         resource = ckan.action.resource_show(site=DEFAULT_SITE, id=resource_id)
-        if 'url' in resource:
+        if 'url' in resource and resource['url'][-n:] == file_format:
+        # If the source file is already in file_format, just serve the file directly.
             return redirect(resource['url'])
 
     if file_format in ['csv', 'tsv']:
