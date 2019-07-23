@@ -1,5 +1,6 @@
 import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse
+from django.shortcuts import redirect
 
 from .ckan_util import get_resource_parameter, total_rows
 
@@ -55,6 +56,15 @@ def stream_response(request, resource_id, file_format='csv'):
     # be generated for streaming responses."
 
     file_format = file_format.lower()
+    ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
+    resource_format = get_resource_parameter(DEFAULT_SITE, resource_id, parameter='format', API_key=None).lower()
+    n = len(file_format)
+    if resource_format == file_format and resource['url'][-n:] == file_format:
+        # If the source file is already in file_format, just serve the file directly.
+        resource = ckan.action.resource_show(site=DEFAULT_SITE, id=resource_id)
+        if 'url' in resource:
+            return redirect(resource['url'])
+
     if file_format in ['csv', 'tsv']:
         content_type = 'text/{}'.format(file_format)
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
