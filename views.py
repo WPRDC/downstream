@@ -120,10 +120,10 @@ def stream_response(request, resource_id, file_format='csv'):
         row_count, col_count = get_row_and_column_counts(ckan, resource_id)
         if row_count > excel_row_limit:
             return HttpResponse("Excel files are not supported for row counts greater than {}.".format(excel_row_limit))
-        excel_cell_limit = 100000 # Saving to a local file (which seems to be where it otherwise
-        # gets stuck), downstream can handle a 1191 x 18 file (21438 cells) and a 6828 x 10 file
-        # (68280 cells,) but gets stuck on
-        # a 1049 x 382 file (400718 cells).
+        excel_cell_limit = 200000 # Saving to a local file (which seems to be where it otherwise
+        # gets stuck), downstream can handle a 1191 x 17 file (20247 cells), a 6828 x 9 file
+        # (61452 cells), a 6404 x 19 file (121676 cells), and 27018 x 7 file (189126 cells), but
+        # gets stuck on a 1049 x 382 file (400718 cells).
 
         if row_count * col_count > excel_cell_limit:
             return HttpResponse("Excel files are not supported for cell counts greater than {}, and this table has {} cells.".format(excel_cell_limit, row_count*col_count))
