@@ -50,9 +50,9 @@ def get_package_title(site,resource_id,API_key=None):
 def get_resource_name(site,resource_id,API_key=None):
     return get_resource_parameter(site,resource_id,'name',API_key)
 
-def get_number_of_rows(ckan, resource_id):
-    """Returns the number of rows in a datastore. Note that even when there is a limit
-    placed on the number of results a CKAN API call can return, this function will
-    still give the true number of rows."""
+def get_row_and_column_counts(ckan, resource_id):
+    """Returns the number of rows and columns in a datastore. Note that even when there
+    is a limit placed on the number of results a CKAN API call can return, this
+    function will still give the true number of rows."""
     results_dict = ckan.action.datastore_info(id = resource_id)
-    return results_dict['meta']['count']
+    return results_dict['meta']['count'], len(results_dict['schema'])

@@ -2,7 +2,7 @@ import requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import redirect
 
-from .ckan_util import get_resource_parameter, get_resource_name, get_package_title, get_number_of_rows
+from .ckan_util import get_resource_parameter, get_resource_name, get_package_title, get_row_and_column_counts
 
 from pprint import pprint
 try:
@@ -114,12 +114,18 @@ def stream_response(request, resource_id, file_format='csv'):
         raise ValueError("JSON is not yet supported.")
     elif file_format in ['xlsx']:
         content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        #raise ValueError("Excel format is definitely not yet supported.")
 
         excel_row_limit = 100000
-        row_count = get_number_of_rows(ckan, resource_id)
+        row_count, col_count = get_row_and_column_counts(ckan, resource_id)
         if row_count > excel_row_limit:
             return HttpResponse("Excel files are not supported for row counts greater than {}.".format(excel_row_limit))
+        excel_cell_limit = 100000 # Saving to a local file (which seems to be where it otherwise
+        # gets stuck), downstream can handle a 1191 x 18 file (21438 cells) and a 6828 x 10 file
+        # (68280 cells,) but gets stuck on
+        # a 1049 x 382 file (400718 cells).
+
+        if row_count * col_count > excel_cell_limit:
+            return HttpResponse("Excel files are not supported for cell counts greater than {}, and this table has {} cells.".format(excel_cell_limit, row_count*col_count))
         else:
             response = HttpResponse(content_type=content_type)
             filename = "{}.xlsx".format(resource_id)
