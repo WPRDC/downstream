@@ -57,6 +57,7 @@ def write_to_excel_format(ckan, resource_id, chunk_size):
     #]
     local_filename = "{}.xlsx".format(resource_id)
     writer.dump(local_filename)
+    print("Wrote data to local Excel file")
 
     with open(local_filename, 'rb') as fp:
         data = fp.read()
