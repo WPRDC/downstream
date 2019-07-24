@@ -143,8 +143,6 @@ def stream_response(request, resource_id, file_format='csv'):
             response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
             response.write(write_to_excel_format(ckan, resource_id, excel_row_limit))
             return response
-
-
     else:
         response = StreamingHttpResponse(
                 streaming_content=(get_and_write_next_rows(Echo(), ckan, resource_id, 0, file_format)),
@@ -154,3 +152,36 @@ def stream_response(request, resource_id, file_format='csv'):
 
     response['Content-Disposition'] = 'attachment;filename={}.{}'.format(resource_id, file_format)
     return response
+
+def index(request):
+    page = """<span><big>Downstream: Helping you get more of that tasty WPRDC data</big></span><br><br>
+
+        Downstream is capable of streaming tabular data from <a href="https://data.wprdc.org/">https://data.wprdc.org</a> so you can download it.<br>
+        <br>
+        <b>When is this useful?</b><br>
+        1) Sometimes the data table is too big, and CKAN can't generate the CSV output for you. In this case, try Downstream!<br>
+        2) Maybe you want that tabular data in some other format like TSV or Excel* (XSLX).<br>
+        <br>
+        <b>OK, how do I do it?</b><br>
+        Just enter a URL like this in your browser:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;https://tools.wprdc.org/downstream/&lt;CKAN resource ID&gt;<br>
+        <br>
+        You can find the CKAN resource ID at the end of the URL for the data table you want. For instance, the data table for the locations of Carnegie Library of Pittsburgh libraries can be found at
+        &nbsp;&nbsp;&nbsp;&nbsp;<a href="https://data.wprdc.org/dataset/libraries/resource/14babf3f-4932-4828-8b49-3c9a03bae6d0">https://data.wprdc.org/dataset/libraries/resource/14babf3f-4932-4828-8b49-3c9a03bae6d0</a><br>
+        Just grab that long string at the end of the URL and insert it after "downstream/", yielding a URL like this:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0</a><br>
+        <br>
+        A CSV version of that data table will start downloading to your browser. (The default format is CSV.)<br>
+        <br>
+        You can also download other formats by modifying the URL:<br>
+        TSV:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv</a><br>
+        Excel:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx</a><br>
+
+        <br>
+        <br>
+        <small>* Conversions of data to Excel format are currently limited to medium-sized tables (less than 100,000 rows and less than 200,000 cells).</small>
+        <br>
+        <br>
+
+        """
+    return HttpResponse(page)
