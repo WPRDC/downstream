@@ -1,4 +1,4 @@
-import requests, csv, ckanapi, time
+import os, requests, csv, ckanapi, time
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import redirect
 
@@ -65,6 +65,16 @@ def write_to_excel_format(ckan, resource_id, chunk_size):
     #response = HttpResponse(mimetype="application/ms-excel")
     #response['Content-Disposition'] = 'attachment; filename=%s' % filename # force browser to download file
     #response.write(data)
+    if os.path.exists(local_filename):
+        os.remove(local_filename)
+        # [ ] Probably there's a better way than saving the file, then reading the data, and deleting the file.
+
+        # * Specifically pytablewriter's Excel table writer has a write_table_iter() function explicitly
+        # for handling large files in steps:
+        # https://pytablewriter.readthedocs.io/en/latest/pages/reference/writer.html#pytablewriter.ExcelXlsxTableWriter.write_table_iter
+        # This could probably be used to convert this write_to_excel_format function into a generator
+        # just by incrementing offset and sending the data in chunks. (How it handles the header/footer
+        # of the XLSX files is completely unclear.)
     return data
 
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
