@@ -79,12 +79,14 @@ def write_to_excel_format(ckan, resource_id, chunk_size):
 
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
     offset = start_line
-    chunk_size = 200000 # Maybe consider changing chunk_size dynamically based on current system resources.
     records_format = 'objects' if file_format == 'json' else file_format
-    r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
+    initial_chunk_size = 10000 # Use a small initial chunk size to speed up the start of
+    # the downloading process (basically to give the user some feedback).
+    r = ckan.action.datastore_search(id=resource_id, limit=initial_chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
     schema = eliminate_field(r['fields'],'_full_text') # Exclude _full_text from the schema.
     ordered_fields = [f['id'] for f in schema]
     yield pseudo_buffer.write(generate_header(ordered_fields, file_format))
+    chunk_size = 200000 # Maybe consider changing chunk_size dynamically based on current system resources.
     while True:
         if offset != 0:
             r = ckan.action.datastore_search(id=resource_id, limit=chunk_size, offset=offset, records_format=records_format) #, filters={field: search_term})
@@ -96,7 +98,7 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
 
         to_write = data
         yield pseudo_buffer.write(to_write)
-        offset += chunk_size
+        offset += chunk_size if offset !=0 else initial_chunk_size
         time.sleep(0.3)
 
 def stream_response(request, resource_id, file_format='csv'):
