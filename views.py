@@ -173,7 +173,7 @@ def index(request):
         <br>
         <b>When is this useful?</b><br>
         1) Sometimes the data table is too big, and CKAN can't generate the CSV output for you. In this case, try Downstream!<br>
-        2) Maybe you want that tabular data in some other format like TSV or Excel* (XSLX).<br>
+        2) Maybe you want that tabular data in some other format like JSON or TSV or Excel* (XSLX).<br>
         <br>
         <b>OK, how do I do it?</b><br>
         Just enter a URL like this in your browser:<br>
@@ -187,6 +187,7 @@ def index(request):
         A CSV version of that data table will start downloading to your browser. (The default format is CSV.)<br>
         <br>
         You can also download other formats by modifying the URL:<br>
+        JSON:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/json">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/json</a><br>
         TSV:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv</a><br>
         Excel:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx</a><br>
 
