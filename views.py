@@ -1,4 +1,4 @@
-import os, requests, csv, ckanapi, time
+import os, requests, csv, json, ckanapi, time
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import redirect
 
@@ -29,6 +29,8 @@ def generate_header(ordered_fields, file_format):
         return ','.join(ordered_fields) + '\n'
     if file_format == 'tsv':
         return '\t'.join(ordered_fields) + '\n'
+    if file_format == 'json':
+        return '['
 
 def write_to_excel_format(ckan, resource_id, chunk_size):
     records_format = 'objects'
@@ -94,10 +96,20 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
         # When the end of the dataset has been reached, using the
         # "break" command is one way to halt further iteration.
         if len(data) == 0:
+            if file_format == 'json':
+                yield ']'
             break
 
-        to_write = data
-        yield pseudo_buffer.write(to_write)
+        if file_format == 'json':
+            # datastore_search returns a list of dicts, but we need to remove the leading and trailing square
+            # brackets to join together all the lists.
+            if type(data) == list and len(data) > 0:
+                start_with = ',' if offset != 0 else '' # Commas are needed to join together chunks.
+                data = start_with + json.dumps(data, indent=2)[1:-1]
+                yield pseudo_buffer.write(data)
+        else:
+            to_write = data
+            yield pseudo_buffer.write(to_write)
         offset += chunk_size if offset !=0 else initial_chunk_size
         time.sleep(0.3)
 
@@ -124,8 +136,7 @@ def stream_response(request, resource_id, file_format='csv'):
         content_type = 'text/{}'.format(file_format)
     if file_format in ['json']:
         content_type = 'application/json'
-        raise ValueError("JSON is not yet supported.")
-    elif file_format in ['xlsx']:
+    if file_format in ['xlsx']:
         content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
         excel_row_limit = 100000
