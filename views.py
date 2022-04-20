@@ -3,6 +3,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import redirect
 
 from .ckan_util import get_resource_parameter, get_resource_name, get_package_title, get_row_and_column_counts
+from .models import DownloadLog
 
 from pprint import pprint
 try:
@@ -126,12 +127,15 @@ def stream_response(request, resource_id, file_format='csv'):
     # be generated for streaming responses."
 
     file_format = file_format.lower()
+    logging_on = True
+    if file_format == 'testcsv':
+        file_format = 'csv'
+        logging_on = False
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
     metadata = get_resource_parameter(DEFAULT_SITE, resource_id)
     resource_format = metadata['format'].lower()
     n = len(file_format)
     if resource_format == file_format:
-        #resource = ckan.action.resource_show(site=DEFAULT_SITE, id=resource_id)
         if 'url' in metadata and metadata['url'][-n:] == file_format:
         # If the source file is already in file_format, just serve the file directly.
             return redirect(metadata['url'])
@@ -139,20 +143,21 @@ def stream_response(request, resource_id, file_format='csv'):
     package_id = metadata['package_id']
     package = ckan.action.package_show(site=DEFAULT_SITE, id=package_id)
 
-    log_entry = DownloadLog(host = request.META.get('HTTP_HOST', ''),
-                    referrer = request.META.get('HTTP_REFERER', ''),
-                    user_agent = request.META.get('HTTP_USER_AGENT', ''),
-                    ip_address = request.META.get('REMOTE_ADDR', ''),
-                    remote_host = request.META.get('REMOTE_HOST', ''),
-                    server_name = request.META.get('SERVER_NAME', ''),
-                    resource_id = resource_id,
-                    requested_file_format = file_format,
-                    resource_format = resource_format,
-                    resource_name = metadata['name'],
-                    package_id = package_id,
-                    package_name = package['title'])
+    if logging_on:
+        log_entry = DownloadLog(host = request.META.get('HTTP_HOST', ''),
+                        referrer = request.META.get('HTTP_REFERER', ''),
+                        user_agent = request.META.get('HTTP_USER_AGENT', ''),
+                        ip_address = request.META.get('REMOTE_ADDR', ''),
+                        remote_host = request.META.get('REMOTE_HOST', ''),
+                        server_name = request.META.get('SERVER_NAME', ''),
+                        resource_id = resource_id,
+                        requested_file_format = file_format,
+                        resource_format = resource_format,
+                        resource_name = metadata['name'],
+                        package_id = package_id,
+                        package_name = package['title'])
 
-    log_entry.save()
+        log_entry.save()
     if file_format in ['csv', 'tsv']:
         content_type = 'text/{}'.format(file_format)
     if file_format in ['json']:
