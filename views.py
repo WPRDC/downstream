@@ -121,20 +121,38 @@ def stream_response(request, resource_id, file_format='csv'):
     # Python documentation: "StreamingHttpResponse should only be used in
     # situations where it is absolutely required that the whole content
     # isn't iterated before transferring the data to the client. Because
-    # the content can’t be accessed, many middlewares can't function
+    # the content can't be accessed, many middlewares can't function
     # normally. For example the ETag and Content-Length headers can't
     # be generated for streaming responses."
 
     file_format = file_format.lower()
     ckan = ckanapi.RemoteCKAN(DEFAULT_SITE)
-    resource_format = get_resource_parameter(DEFAULT_SITE, resource_id, parameter='format', API_key=None).lower()
+    metadata = get_resource_parameter(DEFAULT_SITE, resource_id)
+    resource_format = metadata['format'].lower()
     n = len(file_format)
     if resource_format == file_format:
-        resource = ckan.action.resource_show(site=DEFAULT_SITE, id=resource_id)
-        if 'url' in resource and resource['url'][-n:] == file_format:
+        #resource = ckan.action.resource_show(site=DEFAULT_SITE, id=resource_id)
+        if 'url' in metadata and metadata['url'][-n:] == file_format:
         # If the source file is already in file_format, just serve the file directly.
-            return redirect(resource['url'])
+            return redirect(metadata['url'])
 
+    package_id = metadata['package_id']
+    package = ckan.action.package_show(site=DEFAULT_SITE, id=package_id)
+
+    log_entry = DownloadLog(host = request.META.get('HTTP_HOST', ''),
+                    referrer = request.META.get('HTTP_REFERER', ''),
+                    user_agent = request.META.get('HTTP_USER_AGENT', ''),
+                    ip_address = request.META.get('REMOTE_ADDR', ''),
+                    remote_host = request.META.get('REMOTE_HOST', ''),
+                    server_name = request.META.get('SERVER_NAME', ''),
+                    resource_id = resource_id,
+                    requested_file_format = file_format,
+                    resource_format = resource_format,
+                    resource_name = metadata['name'],
+                    package_id = package_id,
+                    package_name = package['title'])
+
+    log_entry.save()
     if file_format in ['csv', 'tsv']:
         content_type = 'text/{}'.format(file_format)
     if file_format in ['json']:
