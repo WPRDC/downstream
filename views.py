@@ -79,6 +79,11 @@ def write_to_excel_format(ckan, resource_id, chunk_size):
         # of the XLSX files is completely unclear.)
     return data
 
+def convert_list_to_writable_string(data, offset):
+    start_with = ',' if offset != 0 else '' # Commas are needed to join together chunks.
+    string_to_write = start_with + json.dumps(data, indent=2)[1:-1]
+    return string_to_write
+
 def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file_format='csv'):
     offset = start_line
     records_format = 'objects' if file_format == 'json' else file_format
@@ -104,9 +109,7 @@ def get_and_write_next_rows(pseudo_buffer, ckan, resource_id, start_line=0, file
             # datastore_search returns a list of dicts, but we need to remove the leading and trailing square
             # brackets to join together all the lists.
             if type(data) == list and len(data) > 0:
-                start_with = ',' if offset != 0 else '' # Commas are needed to join together chunks.
-                data = start_with + json.dumps(data, indent=2)[1:-1]
-                yield pseudo_buffer.write(data)
+                yield pseudo_buffer.write(convert_list_to_writable_string(data, offset))
         else:
             to_write = data
             yield pseudo_buffer.write(to_write)
