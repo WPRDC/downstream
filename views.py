@@ -160,7 +160,7 @@ def stream_response(request, resource_id, file_format='csv'):
         log_entry.save()
     if file_format in ['csv', 'tsv']:
         content_type = 'text/{}'.format(file_format)
-    if file_format in ['json']:
+    elif file_format in ['json']:
         content_type = 'application/json'
     if file_format in ['xlsx']:
         content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
