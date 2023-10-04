@@ -28,8 +28,6 @@ class Echo(object):
 def generate_header(ordered_fields, file_format):
     if file_format == 'csv':
         return ','.join(ordered_fields) + '\n'
-    if file_format == 'tsv':
-        return '\t'.join(ordered_fields) + '\n'
     if file_format == 'json':
         return '['
 
@@ -158,7 +156,7 @@ def stream_response(request, resource_id, file_format='csv'):
                         package_name = package['title'])
 
         log_entry.save()
-    if file_format in ['csv', 'tsv']:
+    if file_format in ['csv']:
         content_type = 'text/{}'.format(file_format)
     elif file_format in ['json']:
         content_type = 'application/json'
@@ -199,7 +197,7 @@ def index(request):
         <br>
         <b>When is this useful?</b><br>
         1) Sometimes the data table is too big, and CKAN can't generate the CSV output for you. In this case, try Downstream!<br>
-        2) Maybe you want that tabular data in some other format like JSON or TSV or Excel* (XSLX).<br>
+        2) Maybe you want that tabular data in some other format like JSON or Excel* (XSLX).<br>
         <br>
         <b>OK, how do I do it?</b><br>
         Just enter a URL like this in your browser:<br>
@@ -214,7 +212,6 @@ def index(request):
         <br>
         You can also download other formats by modifying the URL:<br>
         JSON:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/json">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/json</a><br>
-        TSV:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/tsv</a><br>
         Excel:&nbsp;&nbsp;<a href="https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx">https://tools.wprdc.org/downstream/14babf3f-4932-4828-8b49-3c9a03bae6d0/xlsx</a><br>
 
         <br>
